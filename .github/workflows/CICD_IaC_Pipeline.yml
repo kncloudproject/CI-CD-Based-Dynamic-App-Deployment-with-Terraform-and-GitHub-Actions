@@ -171,9 +171,15 @@ jobs:
       - name: Create ECR repository
         env:
           IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
-        if: env.repo_name != env.IMAGE_NAME
+          REPO_NAME: ${{ env.repo_name }}
+
         run: |
-          aws ecr create-repository --repository-name ${{ env.IMAGE_NAME }}
+          if [ "$REPO_NAME" != "$IMAGE_NAME" ] || [ -z "$REPO_NAME" ]; then
+            echo "Repository doesn't exist. Creating $IMAGE_NAME ..."
+            aws ecr create-repository --repository-name "$IMAGE_NAME"
+          else
+            echo "Repository $IMAGE_NAME already exists."
+          fi
 
   # Start Self-Hosted EC2 Runner
   start_runner:
