@@ -148,7 +148,7 @@ jobs:
       env_file_bucket_name: ${{ env.ENV_FILE_BUCKET_NAME }}
 
 
-# Create ECR repository
+# Create ECR Repository
   create_ecr_repository:
     name: Create ECR repository
     needs: 
@@ -201,7 +201,7 @@ jobs:
         with:
           mode: start
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          ec2-image-id: 
+          ec2-image-id: ami-02f68aa9c942623e5
           ec2-instance-type: t2.micro
           subnet-id: ${{ needs.deploy_aws_infrastructure.outputs.private_data_subnet_az1_id }}
           security-group-id: ${{ needs.deploy_aws_infrastructure.outputs.runner_security_group_id }}
