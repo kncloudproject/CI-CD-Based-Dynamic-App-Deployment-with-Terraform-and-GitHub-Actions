@@ -49,4 +49,4 @@ jobs:
 
       - name: Run Terraform apply/destroy
         working-directory: ./iac
-        run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
+        run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve -lock=false
