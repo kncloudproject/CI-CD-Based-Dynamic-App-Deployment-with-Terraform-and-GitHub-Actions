@@ -18,7 +18,7 @@ env:
 jobs:
   # Configure AWS Credentials 
   configure_aws_credentials:
-    name: Configure AWS credentials
+    name: Configure AWS Credentials
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
@@ -31,7 +31,7 @@ jobs:
 
   # Build AWS Infrastructure
   deploy_aws_infrastructure:
-    name: Build AWS infrastructure
+    name: Build AWS Infrastructure
     needs: configure_aws_credentials
     runs-on: ubuntu-latest 
     steps:

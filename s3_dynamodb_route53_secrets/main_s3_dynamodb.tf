@@ -6,7 +6,7 @@ resource "random_id" "rand" {
 }
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket        = "kn-pbl-terraform-statefile"
+  bucket        = "kn-pbl-terraform-statefile-cicd"
   force_destroy = true
 }
 
