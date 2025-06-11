@@ -217,7 +217,7 @@ jobs:
 
 # Build and Push Docker Image to ECR
   build_and_push_image:
-    name: Build and push Docker image to ECR
+    name: Build and Push Docker Image to ECR
     needs:
       - configure_aws_credentials
       - deploy_aws_infrastructure
@@ -230,7 +230,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
         env:
@@ -263,3 +263,5 @@ jobs:
           IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
         run: |
           docker push ${{ secrets.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}
+
+
