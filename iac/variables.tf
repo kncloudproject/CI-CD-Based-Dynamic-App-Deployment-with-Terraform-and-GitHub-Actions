@@ -1,26 +1,3 @@
-# Ensure S3 and DynamoDB Are Set Up for Remote State and Locking 
-variable "Is_S3_DynamoDB_Configred" {
-  description = "Confirm S3 and DynamoDB are Configured"
-  type        = string
-  validation {
-    condition     = var.Is_S3_DynamoDB_Configred == "YES"
-    error_message = "S3 Bucket and DynamoDB table must be set up and backend updated. Set Is_s3_dynamo_Configred to \"YES\"."
-  }
-}
-
-
-# Confirm Route 53 Hosted Zone is Created and NS Records are Updated in GoDaddy
-variable "is_hosted_zone_configured" {
-  description = "Confirm Route 53 Hosted Zone is Created and NS Records are Updated in GoDaddy"
-  type        = string
-  validation {
-    condition     = var.is_hosted_zone_configured == "YES"
-    error_message = "Must create the Hosted Zone in Route 53 & Update NS records in GoDaddy, then set is_hosted_zone_configured to \"YES\"."
-  }
-}
-
-
-
 # environment variables
 variable "region" {
   description = "region to create resources"
