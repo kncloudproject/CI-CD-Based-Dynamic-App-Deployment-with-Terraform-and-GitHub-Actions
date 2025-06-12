@@ -4,16 +4,6 @@ on:
   push:
     branches: [main]
 
-jobs:
-  wait_for_approval:
-    name: Manual Approval Required
-    runs-on: ubuntu-latest
-    environment:
-      name: approval-gate
-    steps:
-      - name: Awaiting Manual Approval
-        run: echo "Waiting for approval from kncloudproject"
-
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -26,6 +16,15 @@ env:
   FLYWAY_VERSION: 9.8.1
 
 jobs:
+  wait_for_approval:
+    name: Manual Approval Required
+    runs-on: ubuntu-latest
+    environment:
+      name: approval-gate  # requires manual approval
+    steps:
+      - name: Awaiting Manual Approval
+        run: echo "Waiting for approval from kncloudproject."
+
   # Configure AWS Credentials 
   configure_aws_credentials:
     name: Configure AWS Credentials
