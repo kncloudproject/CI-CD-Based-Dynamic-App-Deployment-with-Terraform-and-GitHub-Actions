@@ -22,4 +22,4 @@ override.tf.json
 *_override.tf.json
 
 # Ignore the file with sensitive information even for testing.
-main_secretmanager.tf
+local_secrets.tf

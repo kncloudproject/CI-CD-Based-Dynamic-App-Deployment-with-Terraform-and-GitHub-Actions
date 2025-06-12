@@ -13,9 +13,9 @@ resource "aws_secretsmanager_secret" "example" {
 resource "aws_secretsmanager_secret_version" "secrets" {
   secret_id = aws_secretsmanager_secret.example.id
   secret_string = jsonencode({
-    rds_db_name  = "applicationdb"
-    username     = "knadmin"
-    password     = "KnAdminTestPassw0rd"
+    rds_db_name  = local.rds_db_name
+    username     = local.db_username
+    password     = local.db_password
     ecr_registry = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com"
 
   })
