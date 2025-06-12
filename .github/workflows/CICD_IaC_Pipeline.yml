@@ -150,17 +150,17 @@ jobs:
 
 # Create ECR Repository
   create_ecr_repository:
-    name: Create ECR repository
+    name: Create ECR Repository
     needs: 
       - configure_aws_credentials
       - deploy_aws_infrastructure
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Check if ECR repository exists
+      - name: Check if ECR Repository Exists
         env:
           IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
         run: |
@@ -183,7 +183,7 @@ jobs:
 
   # Start Self-Hosted EC2 Runner
   start_runner:
-    name: Start Self-Hosted EC2 runner
+    name: Start Self-Hosted EC2 Runner
     needs: 
       - configure_aws_credentials
       - deploy_aws_infrastructure
@@ -230,7 +230,7 @@ jobs:
       - create_ecr_repository
       - start_runner
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
