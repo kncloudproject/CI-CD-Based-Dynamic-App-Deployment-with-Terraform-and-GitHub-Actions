@@ -21,7 +21,7 @@ jobs:
     name: Configure AWS Credentials
     runs-on: ubuntu-latest
     steps:
-      - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
@@ -263,6 +263,13 @@ jobs:
           IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
         run: |
           docker tag ${{ env.IMAGE_NAME }} ${{ secrets.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
