@@ -28,6 +28,7 @@ jobs:
   # Configure AWS Credentials 
   configure_aws_credentials:
     name: Configure AWS Credentials
+    needs: wait_for_approval
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS Credentials
