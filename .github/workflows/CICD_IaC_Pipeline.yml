@@ -27,6 +27,7 @@ jobs:
 
   detect-changes:
     runs-on: ubuntu-latest
+    needs: wait_for_approval
     outputs:
       iac_changed: ${{ steps.iac-check.outputs.changed }}
     steps:
