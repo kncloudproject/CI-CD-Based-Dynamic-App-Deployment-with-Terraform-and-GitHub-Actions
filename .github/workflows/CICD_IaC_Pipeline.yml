@@ -25,6 +25,22 @@ jobs:
       - name: Awaiting Manual Approval
         run: echo "Waiting for approval from kncloudproject."
 
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      iac_changed: ${{ steps.iac-check.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check for iac/ folder changes
+        id: iac-check
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^iac/'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
   # Configure AWS Credentials 
   configure_aws_credentials:
     name: Configure AWS Credentials
@@ -42,10 +58,13 @@ jobs:
   # Build AWS Infrastructure
   deploy_aws_infrastructure:
     name: Build AWS Infrastructure
-    needs: configure_aws_credentials
+    needs: 
+      - configure_aws_credentials
+      - detect-changes
+    if: needs.detect-changes.outputs.iac_changed == 'true'
     runs-on: ubuntu-latest 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Set up Terraform
@@ -53,31 +72,31 @@ jobs:
         with:
           terraform_version: 1.1.7
 
-      - name: Run Terraform initialize
+      - name: Run Terraform Initialize
         working-directory: ./iac
         run: terraform init
 
-      - name: Run Terraform apply/destroy
+      - name: Run Terraform Apply/Destroy
         working-directory: ./iac
-        run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve -lock=false
+        run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
 
 
 
-      - name: Get Terraform output image name
+      - name: Get Terraform Output Image Name
         if: env.TERRAFORM_ACTION == 'apply'
         working-directory: ./iac
         run: |
           IMAGE_NAME_VALUE=$(terraform output -raw image_name | grep -Eo "^[^:]+" | tail -n 1)
           echo "IMAGE_NAME=$IMAGE_NAME_VALUE" >> $GITHUB_ENV
 
-      - name: Get Terraform output domain name
+      - name: Get Terraform Output Domain Name
         if: env.TERRAFORM_ACTION == 'apply'
         working-directory: ./iac
         run: |
           DOMAIN_NAME_VALUE=$(terraform output -raw domain_name | grep -Eo "^[^:]+" | tail -n 1)
           echo "DOMAIN_NAME=$DOMAIN_NAME_VALUE" >> $GITHUB_ENV
 
-      - name: Get Terraform output RDS endpoint
+      - name: Get Terraform Output RDS Endpoint
         if: env.TERRAFORM_ACTION == 'apply'
         working-directory: ./iac
         run: |
@@ -126,7 +145,7 @@ jobs:
           ECS_SERVICE_NAME_VALUE=$(terraform output -raw ecs_service_name | grep -Eo "^[^:]+" | tail -n 1)
           echo "ECS_SERVICE_NAME=$ECS_SERVICE_NAME_VALUE" >> $GITHUB_ENV
 
-      - name: Get Terraform output environment file name
+      - name: Get Terraform Output Environment File Name
         if: env.TERRAFORM_ACTION == 'apply'
         working-directory: ./iac
         run: |
@@ -328,8 +347,4 @@ jobs:
           ENVIRONMENT_FILE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.environment_file_name }}
           ENV_FILE_BUCKET_NAME: ${{ needs.deploy_aws_infrastructure.outputs.env_file_bucket_name }}
         run: aws s3 cp ${{ env.ENVIRONMENT_FILE_NAME }} s3://${{ env.ENV_FILE_BUCKET_NAME }}/${{ env.ENVIRONMENT_FILE_NAME }}
-
-
-
-
 
