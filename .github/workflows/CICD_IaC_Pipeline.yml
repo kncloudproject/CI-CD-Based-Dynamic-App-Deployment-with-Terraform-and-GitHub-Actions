@@ -78,9 +78,7 @@ jobs:
 
       - name: Run Terraform Apply/Destroy
         working-directory: ./iac
-        run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
-
-
+        run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve -lock=false
 
       - name: Get Terraform Output Image Name
         if: env.TERRAFORM_ACTION == 'apply'
