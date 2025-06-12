@@ -61,7 +61,6 @@ jobs:
     name: Build AWS Infrastructure
     needs: 
       - configure_aws_credentials
-      - detect-changes
     if: needs.detect-changes.outputs.iac_changed == 'true'
     runs-on: ubuntu-latest 
     steps:
