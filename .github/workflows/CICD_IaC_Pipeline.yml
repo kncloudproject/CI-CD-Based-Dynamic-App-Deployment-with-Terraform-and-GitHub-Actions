@@ -44,7 +44,10 @@ jobs:
     name: Build AWS Infrastructure
     needs: 
       - configure_aws_credentials
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./iac  # Sets working directory for all steps
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -58,9 +61,29 @@ jobs:
         working-directory: ./iac
         run: terraform init
 
+      - name: Run Terraform Plan
+        run: terraform plan -out=tfplan.out
+
+      - name: Show Plan JSON
+        run: terraform show -json tfplan.out > tfplan.json
+
+      - name: Check for Changes in Plan
+        id: plancheck
+        run: |
+          CHANGES=$(jq '.resource_changes | length' tfplan.json)
+          echo "Changes: $CHANGES"
+          if [ "$CHANGES" -eq "0" ]; then
+            echo "No infra changes detected."
+            echo "apply=false" >> $GITHUB_OUTPUT
+          else
+            echo "Infra changes detected."
+            echo "apply=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run Terraform Apply/Destroy
         working-directory: ./iac
-        run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
+        if: steps.plancheck.outputs.apply == 'true'
+        run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve tfplan.out
 
       - name: Get Terraform Output Image Name
         if: env.TERRAFORM_ACTION == 'apply'
@@ -216,7 +239,7 @@ jobs:
         with:
           mode: start
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          ec2-image-id: ami-0be9c73e9c8b75e88
+          ec2-image-id: ami-0dc3a08bd93f84a35
           ec2-instance-type: t2.micro
           subnet-id: ${{ needs.deploy_aws_infrastructure.outputs.private_data_subnet_az1_id }}
           security-group-id: ${{ needs.deploy_aws_infrastructure.outputs.runner_security_group_id }}
@@ -251,7 +274,7 @@ jobs:
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Build Docker image
+      - name: Build Docker Image
         env:
           DOMAIN_NAME: ${{ needs.deploy_aws_infrastructure.outputs.domain_name }}
           RDS_ENDPOINT: ${{ needs.deploy_aws_infrastructure.outputs.rds_endpoint }}
