@@ -63,9 +63,8 @@ jobs:
       - name: Run Terraform Plan
         run: terraform plan -out=tfplan.out
 
-        
+
       - name: Run Terraform Apply/Destroy
-        if: steps.plancheck.outputs.apply == 'true'
         run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve tfplan.out
 
       - name: Get Terraform Output Image Name
