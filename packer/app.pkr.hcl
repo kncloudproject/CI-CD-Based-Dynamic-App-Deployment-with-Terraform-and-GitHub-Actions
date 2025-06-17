@@ -15,7 +15,7 @@ variable "ssh_username" {
 }
 
 variable "source_ami" {
-  default = "ami-0dc3a08bd93f84a35"
+  default = "ami-0f3f13f145e66a0a3"
 }
 
 
