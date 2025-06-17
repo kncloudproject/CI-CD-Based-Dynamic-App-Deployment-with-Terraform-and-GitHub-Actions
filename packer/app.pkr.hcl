@@ -15,7 +15,8 @@ variable "ssh_username" {
 }
 
 variable "source_ami" {
-  default = "ami-0f3f13f145e66a0a3"
+  # Source AMI of Amazon Linux 2023
+  default = "ami-09e6f87a47903347c"
 }
 
 
