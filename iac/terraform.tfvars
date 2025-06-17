@@ -26,7 +26,7 @@ domain_name       = "aws.knsecurecloud.com"
 alternative_names = "*.aws.knsecurecloud.com"
 
 # s3 variables
-env_file_bucket_name = "kn-rentzone-env-kn89"
+env_file_bucket_name = "kn-rentzone-env-cicd"
 env_file_name        = "env-variables-file.env"
 
 # ecs variables
