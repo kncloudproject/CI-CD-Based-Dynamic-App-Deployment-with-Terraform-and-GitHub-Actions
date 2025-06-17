@@ -38,7 +38,6 @@ jobs:
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-
   # Build AWS Infrastructure
   deploy_aws_infrastructure:
     name: Build AWS Infrastructure
@@ -221,7 +220,7 @@ jobs:
         with:
           mode: start
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          ec2-image-id: ami-0a942a54accf31805
+          ec2-image-id: ami-0addc6c2b0c074560
           ec2-instance-type: t2.micro
           subnet-id: ${{ needs.deploy_aws_infrastructure.outputs.private_data_subnet_az1_id }}
           security-group-id: ${{ needs.deploy_aws_infrastructure.outputs.runner_security_group_id }}
@@ -244,7 +243,7 @@ jobs:
       - create_ecr_repository
       - start_runner
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
