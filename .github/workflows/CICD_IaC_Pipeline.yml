@@ -204,6 +204,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check for Running EC2 Runner
+        id : detect
         run: |
           instances=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=ec2-github-runner" "Name=instance-state-name,Values=running" --query 'Reservations[].Instances[].InstanceId' --output text)
 
@@ -237,9 +238,10 @@ jobs:
           echo "instance_id=${{ steps.start-ec2-runner.outputs.ec2-instance-id }}" >> $GITHUB_OUTPUT
           echo "label=${{ steps.start-ec2-runner.outputs.label }}" >> $GITHUB_OUTPUT
         id: setoutputs
+
     outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+      label: ${{ steps.start-ec2-runner.outputs.label || steps.detect.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id || steps.detect.outputs.instance_id }}
 
 
 
