@@ -223,7 +223,7 @@ jobs:
           fi
 
       - name: Start EC2 Runner (Only if Not Running)
-        if: steps.detect.outputs.runner_running != 'true'
+        if: steps.detect.outputs.runner_running != 'false'
         id: start-ec2-runner
         uses: machulav/ec2-github-runner@v2
         with:
