@@ -243,7 +243,7 @@ jobs:
         id: set-final-outputs
         run: |
           LABEL="${{ steps.start-ec2-runner.outputs.label }}"
-          INSTANCE_ID="${{ steps.start-ec2-runner.outputs.ec2-instance-id }}"
+          INSTANCE_ID="${{ steps.start-ec2-runner.outputs.ec2_instance_id }}"
 
           if [ -z "$LABEL" ]; then
             LABEL="${{ steps.detect.outputs.label }}"
@@ -254,15 +254,15 @@ jobs:
 
           echo "label=$LABEL" >> $GITHUB_OUTPUT
           echo "ec2_instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
-          
+
       - name: Debug outputs
         run: |
           echo "Label: ${{ needs.start_runner.outputs.label }}"
-          echo "Instance ID: ${{ needs.start_runner.outputs.ec2-instance-id }}"
+          echo "Instance ID: ${{ needs.start_runner.outputs.ec2_instance_id }}"
 
     outputs:
       label: ${{ steps.set-final-outputs.outputs.label }}
-      ec2-instance-id: ${{ steps.set-final-outputs.outputs.ec2_instance_id }}
+      ec2_instance_id: ${{ steps.set-final-outputs.outputs.ec2_instance_id }}
 
 
 # # Build and Push Docker Image to ECR
@@ -415,6 +415,11 @@ jobs:
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
     runs-on: ubuntu-latest
     steps:
+      - name: Show Runner Info from Previous Job
+        run: |
+          echo "Label from start_runner: ${{ needs.start_runner.outputs.label }}"
+          echo "EC2 Instance ID from start_runner: ${{ needs.start_runner.outputs.ec2_instance_id }}"
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -427,7 +432,7 @@ jobs:
           mode: stop
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           label: ${{ needs.start_runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start_runner.outputs.ec2-instance-id }}
+          ec2_instance_id: ${{ needs.start_runner.outputs.ec2_instance_id }}
 
 
   # # Create new task definition revision
