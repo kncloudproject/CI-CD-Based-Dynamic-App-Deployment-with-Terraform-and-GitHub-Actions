@@ -243,10 +243,10 @@ jobs:
       - create_ecr_repository
       - start_runner
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
