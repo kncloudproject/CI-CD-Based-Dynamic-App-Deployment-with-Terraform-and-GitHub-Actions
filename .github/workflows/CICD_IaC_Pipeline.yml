@@ -194,76 +194,76 @@ jobs:
             echo "Repository $IMAGE_NAME already exists."
           fi
 
-  # Start Self-Hosted EC2 Runner
-  start_runner:
-    name: Start Self-Hosted EC2 Runner
-    needs:
-      - configure_aws_credentials
-      - deploy_aws_infrastructure
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+  # # Start Self-Hosted EC2 Runner
+  # start_runner:
+  #   name: Start Self-Hosted EC2 Runner
+  #   needs:
+  #     - configure_aws_credentials
+  #     - deploy_aws_infrastructure
+  #   if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: us-east-1
 
-      - name: Check for Running EC2 Runner
-        id: detect
-        run: |
-          instances=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=ec2-github-runner" "Name=instance-state-name,Values=running" --query 'Reservations[].Instances[].InstanceId' --output text)
+  #     - name: Check for Running EC2 Runner
+  #       id: detect
+  #       run: |
+  #         instances=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=ec2-github-runner" "Name=instance-state-name,Values=running" --query 'Reservations[].Instances[].InstanceId' --output text)
 
-          if [ -n "$instances" ]; then
-            echo "instance_id=$instances" >> $GITHUB_OUTPUT
-            echo "label=ec2-github-runner" >> $GITHUB_OUTPUT
-            echo "runner_running=true" >> $GITHUB_OUTPUT
-          else
-            echo "runner_running=false" >> $GITHUB_OUTPUT
-          fi
+  #         if [ -n "$instances" ]; then
+  #           echo "instance_id=$instances" >> $GITHUB_OUTPUT
+  #           echo "label=ec2-github-runner" >> $GITHUB_OUTPUT
+  #           echo "runner_running=true" >> $GITHUB_OUTPUT
+  #         else
+  #           echo "runner_running=false" >> $GITHUB_OUTPUT
+  #         fi
 
-      - name: Start EC2 Runner (Only if Not Running)
-        if: steps.detect.outputs.runner_running != 'true'
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: start
-          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          ec2-image-id: ami-0f3f13f145e66a0a3
-          ec2-instance-type: t2.micro
-          subnet-id: ${{ needs.deploy_aws_infrastructure.outputs.private_data_subnet_az1_id }}
-          security-group-id: ${{ needs.deploy_aws_infrastructure.outputs.runner_security_group_id }}
-          aws-resource-tags: > 
-            [
-              {"Key": "Name", "Value": "ec2-github-runner"},
-              {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
-            ]
+  #     - name: Start EC2 Runner (Only if Not Running)
+  #       if: steps.detect.outputs.runner_running != 'true'
+  #       id: start-ec2-runner
+  #       uses: machulav/ec2-github-runner@v2
+  #       with:
+  #         mode: start
+  #         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+  #         ec2-image-id: ami-0f3f13f145e66a0a3
+  #         ec2-instance-type: t2.micro
+  #         subnet-id: ${{ needs.deploy_aws_infrastructure.outputs.private_data_subnet_az1_id }}
+  #         security-group-id: ${{ needs.deploy_aws_infrastructure.outputs.runner_security_group_id }}
+  #         aws-resource-tags: > 
+  #           [
+  #             {"Key": "Name", "Value": "ec2-github-runner"},
+  #             {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
+  #           ]
 
-      - name: Set final outputs
-        id: set-final-outputs
-        run: |
-          LABEL="${{ steps.start-ec2-runner.outputs.label }}"
-          INSTANCE_ID="${{ steps.start-ec2-runner.outputs.ec2-instance-id }}"
+  #     - name: Set final outputs
+  #       id: set-final-outputs
+  #       run: |
+  #         LABEL="${{ steps.start-ec2-runner.outputs.label }}"
+  #         INSTANCE_ID="${{ steps.start-ec2-runner.outputs.ec2-instance-id }}"
 
-          if [ -z "$LABEL" ]; then
-            LABEL="${{ steps.detect.outputs.label }}"
-          fi
-          if [ -z "$INSTANCE_ID" ]; then
-            INSTANCE_ID="${{ steps.detect.outputs.instance_id }}"
-          fi
+  #         if [ -z "$LABEL" ]; then
+  #           LABEL="${{ steps.detect.outputs.label }}"
+  #         fi
+  #         if [ -z "$INSTANCE_ID" ]; then
+  #           INSTANCE_ID="${{ steps.detect.outputs.instance_id }}"
+  #         fi
 
-          echo "label=$LABEL" >> $GITHUB_OUTPUT
-          echo "ec2-instance-id=$INSTANCE_ID" >> $GITHUB_OUTPUT
+  #         echo "label=$LABEL" >> $GITHUB_OUTPUT
+  #         echo "ec2-instance-id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
-      - name: Debug Outputs
-        run: |
-          echo "Label: ${{ steps.set-final-outputs.outputs.label }}"
-          echo "Instance ID: ${{ steps.set-final-outputs.outputs.ec2-instance-id }}"
+  #     - name: Debug Outputs
+  #       run: |
+  #         echo "Label: ${{ steps.set-final-outputs.outputs.label }}"
+  #         echo "Instance ID: ${{ steps.set-final-outputs.outputs.ec2-instance-id }}"
 
-    outputs:
-      label: ${{ steps.set-final-outputs.outputs.label }}
-      ec2-instance-id: ${{ steps.set-final-outputs.outputs.ec2-instance-id }}
+  #   outputs:
+  #     label: ${{ steps.set-final-outputs.outputs.label }}
+  #     ec2-instance-id: ${{ steps.set-final-outputs.outputs.ec2-instance-id }}
 
 
 # # Build and Push Docker Image to ECR
@@ -403,76 +403,78 @@ jobs:
   #           -password=${{ env.FLYWAY_PASSWORD }} \
   #           -locations=${{ env.FLYWAY_LOCATION }} migrate
 
-  # Stop the self-hosted EC2 runner
-  stop_runner:
-    name: Stop Self-hosted EC2 runner
-    needs:
-      - configure_aws_credentials
-      - deploy_aws_infrastructure
-      - start_runner
-      # - build_and_push_image
-      # - export_env_variables
-      # - migrate_data
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Show Runner Info from Previous Job
-        run: |
-          echo "Label from start_runner: ${{ needs.start_runner.outputs.label }}"
-          echo "EC2 Instance ID from start_runner: ${{ needs.start_runner.outputs.ec2-instance-id }}"
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: stop
-          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          label: ${{ needs.start_runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start_runner.outputs.ec2-instance-id }}
 
 
-  # # Create new task definition revision
-  # create_td_revision:
-  #   name: Create new task definition revision
-  #   needs: 
+  # # Stop the self-hosted EC2 runner
+  # stop_runner:
+  #   name: Stop Self-hosted EC2 runner
+  #   needs:
   #     - configure_aws_credentials
-  #     - deploy_aws_infrastructure 
-  #     - create_ecr_repository
-  #     - start_runner
-  #     - build_and_push_image
-  #     - export_env_variables
+  #     - deploy_aws_infrastructure
+  #     # - start_runner
+  #     # - build_and_push_image
+  #     # - export_env_variables
   #     # - migrate_data
-  #     - stop_runner
   #   if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - name: Create new task definition revision
-  #       env:
-  #         ECS_FAMILY: ${{  }}
-  #         ECS_IMAGE: ${{  }}:${{  }}
+  #     - name: Show Runner Info from Previous Job
   #       run: |
-  #         # Get existing task definition
-  #         TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition ${{  }})
+  #         echo "Label from start_runner: ${{ needs.start_runner.outputs.label }}"
+  #         echo "EC2 Instance ID from start_runner: ${{ needs.start_runner.outputs.ec2-instance-id }}"
 
-  #         # update the existing task definition by performing the following actions:
-  #         # 1. Update the `containerDefinitions[0].image` to the new image we want to deploy
-  #         # 2. Remove fields from the task definition that are not compatibile with `register-task-definition` --cli-input-json
-  #         NEW_TASK_DEFINITION=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "${{  }}" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)')
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ env.AWS_REGION }}
+  #     - name: Stop EC2 runner
+  #       uses: machulav/ec2-github-runner@v2
+  #       with:
+  #         mode: stop
+  #         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+  #         label: ${{ needs.start_runner.outputs.label }}
+  #         ec2-instance-id: ${{ needs.start_runner.outputs.ec2-instance-id }}
 
-  #         # Register the new task definition and capture the output as JSON
-  #         NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEFINITION")
 
-  #         # Grab the new revision from the output
-  #         NEW_TD_REVISION=$(echo "$NEW_TASK_INFO" | jq '.taskDefinition.revision')
+  # Create new task definition revision
+  create_td_revision:
+    name: Create New Task Definition Revision
+    needs: 
+      - configure_aws_credentials
+      - deploy_aws_infrastructure 
+      - create_ecr_repository
+      # - start_runner
+      # - build_and_push_image
+      # - export_env_variables
+      # - migrate_data
+      # - stop_runner
+    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create new task definition revision
+        env:
+          ECS_FAMILY: ${{ needs.deploy_aws_infrastructure.outputs.task_definition_name }}
+          ECS_IMAGE: ${{ secrets.ECR_REGISTRY }}/${{ needs.deploy_aws_infrastructure.outputs.image_name }}:${{ needs.deploy_aws_infrastructure.outputs.image_tag }}
+        run: |
+          # Get existing task definition
+          TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition ${{ env.ECS_FAMILY }})
 
-  #         # Set the new revision as an environment variable
-  #         echo "NEW_TD_REVISION=$NEW_TD_REVISION" >> $GITHUB_ENV
+          # update the existing task definition by performing the following actions:
+          # 1. Update the `containerDefinitions[0].image` to the new image we want to deploy
+          # 2. Remove fields from the task definition that are not compatibile with `register-task-definition` --cli-input-json
+          NEW_TASK_DEFINITION=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "${{ env.ECS_IMAGE }}" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)')
 
-  #   outputs:
-  #     new_td_revision: ${{  }}
+          # Register the new task definition and capture the output as JSON
+          NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEFINITION")
+
+          # Grab the new revision from the output
+          NEW_TD_REVISION=$(echo "$NEW_TASK_INFO" | jq '.taskDefinition.revision')
+
+          # Set the new revision as an environment variable
+          echo "NEW_TD_REVISION=$NEW_TD_REVISION" >> $GITHUB_ENV
+
+    outputs:
+      new_td_revision: ${{ env.NEW_TD_REVISION }}
 
