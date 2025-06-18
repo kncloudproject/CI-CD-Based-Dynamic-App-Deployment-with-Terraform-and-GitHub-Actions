@@ -203,6 +203,12 @@ jobs:
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
     runs-on: ubuntu-latest
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
       - name: Check for Running EC2 Runner
         id : detect
         run: |
@@ -211,13 +217,13 @@ jobs:
           if [ -n "$instances" ]; then
             echo "instance_id=$instance_id" >> $GITHUB_OUTPUT
             echo "label=ec2-github-runner" >> $GITHUB_OUTPUT
-            echo "runner-running=true" >> $GITHUB_ENV
+            echo "runner_running=true" >> $GITHUB_ENV
           else
-            echo "runner-running=false" >> $GITHUB_ENV
+            echo "runner_running=false" >> $GITHUB_ENV
           fi
 
       - name: Start EC2 Runner (Only if Not Running)
-        if: env.runner-running != 'true'
+        if: steps.detect.outputs.runner_running != 'true'
         id: start-ec2-runner
         uses: machulav/ec2-github-runner@v2
         with:
@@ -233,7 +239,7 @@ jobs:
               {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
             ]
       - name: Set Outputs from Started Runner
-        if: env.runner-running != 'true'
+        if: steps.detect.outputs.runner_running != 'true'
         run: |
           echo "instance_id=${{ steps.start-ec2-runner.outputs.ec2-instance-id }}" >> $GITHUB_OUTPUT
           echo "label=${{ steps.start-ec2-runner.outputs.label }}" >> $GITHUB_OUTPUT
@@ -392,7 +398,7 @@ jobs:
       - build_and_push_image
       - export_env_variables
       # - migrate_data
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy' && always() 
+    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS Credentials
