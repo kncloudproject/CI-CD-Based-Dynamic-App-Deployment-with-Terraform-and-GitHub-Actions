@@ -254,6 +254,11 @@ jobs:
 
           echo "label=$LABEL" >> $GITHUB_OUTPUT
           echo "ec2_instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
+          
+      - name: Debug outputs
+        run: |
+          echo "Label: ${{ needs.start_runner.outputs.label }}"
+          echo "Instance ID: ${{ needs.start_runner.outputs.ec2-instance-id }}"
 
     outputs:
       label: ${{ steps.set-final-outputs.outputs.label }}
