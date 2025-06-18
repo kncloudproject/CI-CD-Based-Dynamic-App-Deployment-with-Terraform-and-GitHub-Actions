@@ -405,7 +405,7 @@ jobs:
 
   # Stop the self-hosted EC2 runner
   stop_runner:
-    name: Stop self-hosted EC2 runner
+    name: Stop Self-hosted EC2 runner
     needs:
       - configure_aws_credentials
       - deploy_aws_infrastructure
@@ -419,7 +419,7 @@ jobs:
       - name: Show Runner Info from Previous Job
         run: |
           echo "Label from start_runner: ${{ needs.start_runner.outputs.label }}"
-          echo "EC2 Instance ID from start_runner: ${{ needs.start_runner.outputs.ec2_instance_id }}"
+          echo "EC2 Instance ID from start_runner: ${{ needs.start_runner.outputs.ec2-instance-id }}"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
