@@ -257,8 +257,7 @@ jobs:
 
     outputs:
       label: ${{ steps.set-final-outputs.outputs.label }}
-      ec2-instance-id: ${{ steps.set-final-outputs.outputs.ec2-instance-id }}
-
+      ec2-instance-id: ${{ steps.set-final-outputs.outputs.ec2_instance_id }}
 
 
 # # Build and Push Docker Image to ECR
