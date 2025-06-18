@@ -215,7 +215,7 @@ jobs:
           instances=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=ec2-github-runner" "Name=instance-state-name,Values=running" --query 'Reservations[].Instances[].InstanceId' --output text)
 
           if [ -n "$instances" ]; then
-            echo "instance_id=$instance_id" >> $GITHUB_OUTPUT
+            echo "instance_id=$$instances" >> $GITHUB_OUTPUT
             echo "label=ec2-github-runner" >> $GITHUB_OUTPUT
             echo "runner_running=true" >> $GITHUB_OUTPUT
           else
