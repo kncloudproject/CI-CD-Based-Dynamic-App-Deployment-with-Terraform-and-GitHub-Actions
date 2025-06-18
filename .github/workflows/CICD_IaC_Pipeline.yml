@@ -195,74 +195,75 @@ jobs:
           fi
 
   # Start Self-Hosted EC2 Runner
-  start_runner:
-    name: Start Self-Hosted EC2 Runner
-    needs: 
-      - configure_aws_credentials
-      - deploy_aws_infrastructure
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Check for Running EC2 Runner
-        id : detect
-        run: |
-          instances=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=ec2-github-runner" "Name=instance-state-name,Values=running" --query 'Reservations[].Instances[].InstanceId' --output text)
+start_runner:
+  name: Start Self-Hosted EC2 Runner
+  needs:
+    - configure_aws_credentials
+    - deploy_aws_infrastructure
+  if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+  runs-on: ubuntu-latest
+  steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
 
-          if [ -n "$instances" ]; then
-            echo "instance_id=$$instances" >> $GITHUB_OUTPUT
-            echo "label=ec2-github-runner" >> $GITHUB_OUTPUT
-            echo "runner_running=true" >> $GITHUB_OUTPUT
-          else
-            echo "runner_running=false" >> $GITHUB_OUTPUT
-          fi
+    - name: Check for Running EC2 Runner
+      id: detect
+      run: |
+        instances=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=ec2-github-runner" "Name=instance-state-name,Values=running" --query 'Reservations[].Instances[].InstanceId' --output text)
 
-      - name: Start EC2 Runner (Only if Not Running)
-        if: steps.detect.outputs.runner_running != 'true'
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: start
-          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          ec2-image-id: ami-0f3f13f145e66a0a3
-          ec2-instance-type: t2.micro
-          subnet-id: ${{ needs.deploy_aws_infrastructure.outputs.private_data_subnet_az1_id }}
-          security-group-id: ${{ needs.deploy_aws_infrastructure.outputs.runner_security_group_id }}
-          aws-resource-tags: > 
-            [
-              {"Key": "Name", "Value": "ec2-github-runner"},
-              {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
-            ]
+        if [ -n "$instances" ]; then
+          echo "instance_id=$instances" >> $GITHUB_OUTPUT
+          echo "label=ec2-github-runner" >> $GITHUB_OUTPUT
+          echo "runner_running=true" >> $GITHUB_OUTPUT
+        else
+          echo "runner_running=false" >> $GITHUB_OUTPUT
+        fi
 
-      - name: Set final outputs
-        id: set-final-outputs
-        run: |
-          LABEL="${{ steps.start-ec2-runner.outputs.label }}"
-          INSTANCE_ID="${{ steps.start-ec2-runner.outputs.ec2_instance_id }}"
+    - name: Start EC2 Runner (Only if Not Running)
+      if: steps.detect.outputs.runner_running != 'true'
+      id: start-ec2-runner
+      uses: machulav/ec2-github-runner@v2
+      with:
+        mode: start
+        github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        ec2-image-id: ami-0f3f13f145e66a0a3
+        ec2-instance-type: t2.micro
+        subnet-id: ${{ needs.deploy_aws_infrastructure.outputs.private_data_subnet_az1_id }}
+        security-group-id: ${{ needs.deploy_aws_infrastructure.outputs.runner_security_group_id }}
+        aws-resource-tags: > 
+          [
+            {"Key": "Name", "Value": "ec2-github-runner"},
+            {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
+          ]
 
-          if [ -z "$LABEL" ]; then
-            LABEL="${{ steps.detect.outputs.label }}"
-          fi
-          if [ -z "$INSTANCE_ID" ]; then
-            INSTANCE_ID="${{ steps.detect.outputs.instance_id }}"
-          fi
+    - name: Set final outputs
+      id: set-final-outputs
+      run: |
+        LABEL="${{ steps.start-ec2-runner.outputs.label }}"
+        INSTANCE_ID="${{ steps.start-ec2-runner.outputs.ec2-instance-id }}"
 
-          echo "label=$LABEL" >> $GITHUB_OUTPUT
-          echo "ec2_instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
+        if [ -z "$LABEL" ]; then
+          LABEL="${{ steps.detect.outputs.label }}"
+        fi
+        if [ -z "$INSTANCE_ID" ]; then
+          INSTANCE_ID="${{ steps.detect.outputs.instance_id }}"
+        fi
 
-      - name: Debug outputs
-        run: |
-          echo "Label: ${{ needs.start_runner.outputs.label }}"
-          echo "Instance ID: ${{ needs.start_runner.outputs.ec2_instance_id }}"
+        echo "label=$LABEL" >> $GITHUB_OUTPUT
+        echo "ec2-instance-id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
-    outputs:
-      label: ${{ steps.set-final-outputs.outputs.label }}
-      ec2_instance_id: ${{ steps.set-final-outputs.outputs.ec2_instance_id }}
+    - name: Debug Outputs
+      run: |
+        echo "Label: ${{ steps.set-final-outputs.outputs.label }}"
+        echo "Instance ID: ${{ steps.set-final-outputs.outputs.ec2-instance-id }}"
+
+  outputs:
+    label: ${{ steps.set-final-outputs.outputs.label }}
+    ec2-instance-id: ${{ steps.set-final-outputs.outputs.ec2-instance-id }}
 
 
 # # Build and Push Docker Image to ECR
