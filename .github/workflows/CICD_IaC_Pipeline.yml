@@ -222,6 +222,13 @@ jobs:
             echo "runner_running=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Set Outputs from Existing Runner
+        if: steps.detect.outputs.runner_running == 'true'
+        id: setoutputs
+        run: |
+          echo "instance_id=${{ steps.detect.outputs.instance_id }}" >> $GITHUB_OUTPUT
+          echo "label=${{ steps.detect.outputs.label }}" >> $GITHUB_OUTPUT
+
       - name: Start EC2 Runner (Only if Not Running)
         if: steps.detect.outputs.runner_running != 'true'
         id: start-ec2-runner
@@ -243,7 +250,6 @@ jobs:
         run: |
           echo "instance_id=${{ steps.start-ec2-runner.outputs.ec2-instance-id }}" >> $GITHUB_OUTPUT
           echo "label=${{ steps.start-ec2-runner.outputs.label }}" >> $GITHUB_OUTPUT
-        id: setoutputs
 
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label || steps.detect.outputs.label }}
