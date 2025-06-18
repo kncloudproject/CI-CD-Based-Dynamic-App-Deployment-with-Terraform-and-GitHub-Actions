@@ -222,13 +222,6 @@ jobs:
             echo "runner_running=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set Outputs from Existing Runner
-        if: steps.detect.outputs.runner_running == 'true'
-        id: setoutputs
-        run: |
-          echo "instance_id=${{ steps.detect.outputs.instance_id }}" >> $GITHUB_OUTPUT
-          echo "label=${{ steps.detect.outputs.label }}" >> $GITHUB_OUTPUT
-
       - name: Start EC2 Runner (Only if Not Running)
         if: steps.detect.outputs.runner_running != 'true'
         id: start-ec2-runner
@@ -245,15 +238,26 @@ jobs:
               {"Key": "Name", "Value": "ec2-github-runner"},
               {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
             ]
-      - name: Set Outputs from Started Runner
-        if: steps.detect.outputs.runner_running != 'true'
+
+      - name: Set final outputs
+        id: set-final-outputs
         run: |
-          echo "instance_id=${{ steps.start-ec2-runner.outputs.ec2-instance-id }}" >> $GITHUB_OUTPUT
-          echo "label=${{ steps.start-ec2-runner.outputs.label }}" >> $GITHUB_OUTPUT
+          LABEL="${{ steps.start-ec2-runner.outputs.label }}"
+          INSTANCE_ID="${{ steps.start-ec2-runner.outputs.ec2-instance-id }}"
+
+          if [ -z "$LABEL" ]; then
+            LABEL="${{ steps.detect.outputs.label }}"
+          fi
+          if [ -z "$INSTANCE_ID" ]; then
+            INSTANCE_ID="${{ steps.detect.outputs.instance_id }}"
+          fi
+
+          echo "label=$LABEL" >> $GITHUB_OUTPUT
+          echo "ec2_instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
     outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label || steps.detect.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id || steps.detect.outputs.instance_id }}
+      label: ${{ steps.set-final-outputs.outputs.label }}
+      ec2-instance-id: ${{ steps.set-final-outputs.outputs.ec2-instance-id }}
 
 
 
