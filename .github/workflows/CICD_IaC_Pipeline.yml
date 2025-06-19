@@ -226,7 +226,7 @@ jobs:
       - name: Start EC2 Runner (Only if Not Running)
         if: steps.detect.outputs.runner_running != 'true'
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.4.1
         with:
           mode: start
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -430,7 +430,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.4.1
         with:
           mode: stop
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
